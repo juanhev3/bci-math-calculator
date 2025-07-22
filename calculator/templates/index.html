@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mind-Controlled Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; text-align: center; }
+        #output { 
+            font-size: 24px; 
+            margin: 20px; 
+            min-height: 30px; 
+            color: green;
+            transition: color 0.3s; /* Smooth color change */
+        }
+        .reset { color: red; } /* Added for reset visual feedback */
+    </style>
+</head>
+<body>
+    <h1>🧠 Mind-Controlled Calculator</h1>
+    <input id="input" type="text" placeholder="Enter equation (e.g., 2+2)">
+    <button onclick="sendCalculation()">=</button>
+    <div id="output">0</div>
+
+    <script>
+        const outputElement = document.getElementById('output');
+        
+        function updateResult() {
+            fetch('/get_result')
+                .then(r => r.json())
+                .then(data => {
+                    outputElement.textContent = data.result;
+                    // Visual feedback for reset
+                    if (data.result === "0") {
+                        outputElement.classList.add('reset');
+                        setTimeout(() => outputElement.classList.remove('reset'), 1000);
+                    }
+                });
+        }
+
+        function sendCalculation() {
+            const expr = document.getElementById('input').value;
+            fetch('/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `expression=${encodeURIComponent(expr)}`
+            }).then(updateResult);
+        }
+
+        // Auto-update every 300ms (faster response)
+        setInterval(updateResult, 300);
+    </script>
+</body>
+</html>
